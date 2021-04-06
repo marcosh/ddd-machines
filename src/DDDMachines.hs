@@ -4,7 +4,6 @@ module DDDMachines where
 
 -- base
 import Control.Arrow ( Arrow((&&&)) )
-import Data.Functor.Identity ( Identity(Identity) )
 
 -- machines
 import Data.Machine.Mealy ( unfoldMealy, Mealy )
@@ -28,6 +27,7 @@ data DoorCommand = Open | Close
 data DoorState = IsOpen | IsClosed
 
 data DoorEvent = Opened | Closed
+  deriving Show
 
 isOpened :: DoorEvent -> Bool
 isOpened Opened = True
@@ -45,7 +45,9 @@ door = Aggregate $ unfoldMealy action initialState
     initialState :: DoorState
     initialState = IsClosed
 
-counter :: Projection Moore DoorEvent Int
+type DoorOpenedCounter = Int
+
+counter :: Projection Moore DoorEvent DoorOpenedCounter
 counter = Projection $ unfoldMoore (id &&& count) initialCount
   where
     count :: Int -> DoorEvent -> Int
@@ -87,13 +89,12 @@ state = Projection $ unfoldMoore (id &&& lightState) initialState
 
 -- whenever the door is opened the light should turn on
 
--- this is pure, so we use the Identity monad
-turnOnLightOnDoorOpened :: Policy MooreT Identity DoorEvent (Maybe LightCommand)
+turnOnLightOnDoorOpened :: Monad m => Policy MooreT m DoorEvent (Maybe LightCommand)
 turnOnLightOnDoorOpened = Policy $ unfoldMooreT action initialState
   where
-    action :: Bool -> Identity (Maybe LightCommand, DoorEvent -> Bool)
-    action True  = Identity (Just TurnOn, isOpened)
-    action False = Identity (Nothing    , isOpened)
+    action :: Monad m => Bool -> m (Maybe LightCommand, DoorEvent -> Bool)
+    action True  = pure (Just TurnOn, isOpened)
+    action False = pure (Nothing    , isOpened)
 
     initialState :: Bool
     initialState = False

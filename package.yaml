@@ -25,3 +25,10 @@ library:
   source-dirs:       src
   dependencies:
     - machines
+
+executables:
+  ddd-machines:
+    source-dirs:     app
+    main:            Main.hs
+    dependencies:
+      - ddd-machines
