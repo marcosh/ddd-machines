@@ -3,27 +3,14 @@
 
 module App where
 
-import DDDMachines
+import Door
 
 -- machines
 import Data.Machine.Process
-import Data.Machine.Source
 import Data.Machine.Type
 
--- data Command
---   = DoorCommand  DoorCommand
---   | LightCommand LightCommand
+appAggregateAndPolicy :: [DoorCommand] -> [(DoorState, DoorEvent)]
+appAggregateAndPolicy commands = run $ supply commands doorAggregateAndPolicy
 
--- newtype State = State (DoorState, LightState)
-
-app :: [DoorCommand] -> [DoorOpenedCounter]
-app commands =
-  let
-    (Aggregate doorAutomaton) = door
-    (Projection doorProjectionAutomaton) = counter
-  in
-    run $
-         source commands
-      ~> auto doorAutomaton
-      ~> flattened
-      ~> auto doorProjectionAutomaton
+-- app :: [DoorCommand] -> [DoorOpenedCounter]
+-- app commands = run $ supply commands doorProcess

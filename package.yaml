@@ -32,3 +32,12 @@ executables:
     main:            Main.hs
     dependencies:
       - ddd-machines
+
+tests:
+  ddd-machines-spec:
+    main:             Spec.hs
+    source-dirs:      spec
+    dependencies:
+      - ddd-machines
+      - hspec
+      - machines

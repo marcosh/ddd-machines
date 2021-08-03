@@ -1,7 +1,7 @@
 module Main where
 
-import App
-import DDDMachines
+-- import App
+-- import Door
 
 main :: IO ()
-main = print $ app [Open, Open, Close, Open]
+main = print "foo" -- $ app [Knock, Knock]
