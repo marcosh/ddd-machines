@@ -3,10 +3,10 @@ version:             0.1.0.0
 #synopsis:
 #description:
 homepage:            https://github.com/githubuser/ddd-machines#readme
-license:             BSD3
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2021 Author name here
+license:             OtherLicense
+author:              Marco Perone
+maintainer:          pasafama@gmail.com
+copyright:           2021 Marco Perone
 category:            Web
 extra-source-files:
 - README.md
@@ -24,7 +24,7 @@ dependencies:
 library:
   source-dirs:       src
   dependencies:
-    - machines
+    - profunctors
 
 executables:
   ddd-machines:
@@ -40,4 +40,5 @@ tests:
     dependencies:
       - ddd-machines
       - hspec
-      - machines
+      - profunctors
+      - QuickCheck
