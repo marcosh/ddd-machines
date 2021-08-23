@@ -4,7 +4,7 @@
 
 module MealySpec where
 
-import Mealy ( Mealy, MealyT(runMealyT), run, stateless, unfoldMealy )
+import Mealy ( Mealy, MealyT, run, runMealyT, stateless, unfoldMealy )
 
 -- base
 import Data.Functor.Identity

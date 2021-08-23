@@ -1,28 +1,29 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE TupleSections #-}
 
 module Mealy where
 
+import Stateful ( Stateful(..) )
+
 -- base
-import Control.Arrow ( Arrow(first) )
-import Data.Bifunctor ( bimap )
+import Control.Arrow ( Arrow(..), Kleisli(..) )
 import Data.Foldable ( foldlM )
 
--- profunctors
-import Data.Profunctor ( Profunctor(lmap, rmap) )
+{- | MealyT ~ (Kleisli m) a (b, MealyT m a b)
+            ~ a -> m (b, MealyT m a b)
+ -}
+type MealyT m a b = Stateful (Kleisli m) a b
 
-newtype MealyT m a b = MealyT { runMealyT :: a -> m (b, MealyT m a b) }
+mealyT :: (a -> m (b, MealyT m a b)) -> MealyT m a b
+mealyT = Stateful . Kleisli
 
-instance Functor m => Profunctor (MealyT m) where
-  rmap :: (b -> c) -> MealyT m a b -> MealyT m a c
-  rmap f (MealyT runMealy) = MealyT ((bimap f (rmap f) <$>) . runMealy)
-
-  lmap :: (a -> b) -> MealyT m b c -> MealyT m a c
-  lmap f (MealyT runMealy) = MealyT (((lmap f <$>) <$>) . runMealy . f)
+runMealyT :: MealyT m a b -> a -> m (b, MealyT m a b)
+runMealyT (Stateful (Kleisli f)) = f
 
 unfoldMealyT :: Functor m => (s -> a -> m (b, s)) -> s -> MealyT m a b
-unfoldMealyT f = go where
-  go s = MealyT (fmap (go <$>) . f s)
+unfoldMealyT f s = mealyT $ ((unfoldMealyT f <$>) <$>) . f s
 
 type Mealy a b = forall m . Monad m => MealyT m a b
 
@@ -39,4 +40,6 @@ stateless f = unfoldMealy (\s a -> (f a, s)) ()
 It returns also a new version of the machine with the status updated after all the applications.
 -}
 run :: (Monad m, Semigroup b, Foldable f) => MealyT m a b -> b -> f a -> m (b, MealyT m a b)
-run mealy initial = foldlM (\(b, mealy') a -> first (b <>) <$> runMealyT mealy' a) (initial, mealy)
+run mealy initial = foldlM
+  (\(b, mealy') a -> first (b <>) <$> runMealyT mealy' a)
+  (initial, mealy)

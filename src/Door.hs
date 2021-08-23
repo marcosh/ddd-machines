@@ -2,7 +2,7 @@ module Door where
 
 import DDD ( Aggregate(..), Policy(..), Projection(..) )
 import Machines ( feedback )
-import Mealy ( run, stateless, unfoldMealy, MealyT(..) )
+import Mealy ( mealyT, run, runMealyT, stateless, unfoldMealy, MealyT )
 
 data DoorCommand = Knock | Open | Close
   deriving (Eq, Show)
@@ -62,7 +62,7 @@ doorAggregateAndPolicy =
 
 doorProcess :: (Monad m, Semigroup p, Show p) => p -> MealyT m  DoorCommand [DoorEvent] -> MealyT m DoorEvent p -> MealyT m DoorCommand p
 doorProcess initial aggregateAndPolicy projection =
-  MealyT $ \c -> do
+  mealyT $ \c -> do
       (es, aggregateAndPolicy') <- runMealyT aggregateAndPolicy c
 
       (p, projection') <- run projection initial es

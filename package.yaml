@@ -25,6 +25,7 @@ library:
   source-dirs:       src
   dependencies:
     - profunctors
+    - product-profunctors
 
 executables:
   ddd-machines:

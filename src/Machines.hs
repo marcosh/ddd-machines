@@ -2,10 +2,10 @@
 
 module Machines where
 
-import Mealy ( run, MealyT(..) )
+import Mealy ( MealyT, mealyT, run, runMealyT )
 
 feedback :: Monad m => MealyT m c [e] -> MealyT m e [c] -> MealyT m c [e]
-feedback p q = MealyT $ \c -> do
+feedback p q = mealyT $ \c -> do
   -- the aggregate runs and produces some events and a new version of itself
   (es, p') <- runMealyT p c
 
