@@ -4,9 +4,12 @@
 
 module Stateful where
 
+import Distributing ( Distributing(..) )
+
 -- base
 import Control.Arrow ( Arrow(second, (***), (&&&)) )
 import qualified Control.Category as C ( Category(..) )
+import qualified Data.List.NonEmpty as NE ( unzip )
 
 -- product-profunctors
 import Data.Profunctor.Product ( ProductProfunctor(..), SumProfunctor(..) )
@@ -65,3 +68,11 @@ instance SumProfunctor p => SumProfunctor (Stateful p) where
       Left  (b , s1') -> (Left  b , s1' +++! Stateful s2)
       Right (b', s2') -> (Right b', Stateful s1 +++! s2'))
         `rmap` (s1 +++! s2)
+
+instance Distributing p => Distributing (Stateful p) where
+  distribute :: (Applicative f, Traversable f) => f (Stateful p a b) -> Stateful p (f a) (f b)
+  distribute fs =
+    let
+      unwrappedFs = (\(Stateful pab) -> pab) <$> fs
+    in
+      Stateful $ ((distribute <$>) . NE.unzip) `rmap` distribute unwrappedFs
